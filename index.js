@@ -37,6 +37,11 @@ if(args['version']) {
 
 const url = args["_"][0];
 
+if(!!url == false) {
+  console.log('URL must be specificed');
+  process.exit(1);
+}
+
 const run = async (url, options) => {
   const browser = await puppeteer.launch({
     // dumpio: true,
