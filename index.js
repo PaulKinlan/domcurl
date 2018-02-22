@@ -20,8 +20,7 @@ const process = require('process');
 
 let args = minimist(process.argv.slice(2), {  
     alias: {
-        h: 'help',
-        v: 'version'
+        h: 'help'
     }
 });
 
@@ -30,9 +29,10 @@ if(args['h']) {
   return;
 }
 
-if(args['v']) {
+if(args['version']) {
   const packageInfo = require('./package.json');
   console.log(packageInfo.version);
+  return;
 }
 
 const url = args["_"][0];
