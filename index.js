@@ -16,6 +16,7 @@
 
 const puppeteer = require('puppeteer');
 const minimist = require('minimist');
+const process = require('process');
 
 let args = minimist(process.argv.slice(2), {  
     alias: {
@@ -39,6 +40,8 @@ const run = async (url, options) => {
   const html = await page.content();
 
   console.log(html);
+
+  process.exit(0);
 }
 
 run(url);
