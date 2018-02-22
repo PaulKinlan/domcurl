@@ -25,6 +25,16 @@ let args = minimist(process.argv.slice(2), {
     }
 });
 
+if(args['h']) {
+  console.log('> domcurl [url]')
+  return;
+}
+
+if(args['v']) {
+  const packageInfo = require('./package.json');
+  console.log(packageInfo.version);
+}
+
 const url = args["_"][0];
 
 const run = async (url, options) => {
