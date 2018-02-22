@@ -69,7 +69,7 @@ const run = async (url, options) => {
   const response = await page.goto(url, {waitUntil: 'networkidle0'});
   if (options.responseHeader) {
     const request = response.request();
-    console.log(`> ${request.method()} ${url.pathname}`);
+    console.log(`> ${request.method()} ${url.pathname} `);
     console.log(`> Host: ${url.host}`);
     printHeaders(request.headers(), '>');
     printHeaders(response.headers(), '<');
