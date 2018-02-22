@@ -20,26 +20,26 @@ const puppeteer = require('puppeteer');
 const minimist = require('minimist');
 const process = require('process');
 
-let args = minimist(process.argv.slice(2), {  
-    alias: {
-        h: 'help'
-    }
+const args = minimist(process.argv.slice(2), {
+  alias: {
+    h: 'help'
+  }
 });
 
-if(args['h']) {
-  console.log('> domcurl [url]')
+if (args['h']) {
+  console.log('> domcurl [url]');
   return;
 }
 
-if(args['version']) {
+if (args['version']) {
   const packageInfo = require('./package.json');
   console.log(packageInfo.version);
   return;
 }
 
-const url = args["_"][0];
+const url = args['_'][0];
 
-if(!!url == false) {
+if (!!url == false) {
   console.log('URL must be specificed');
   process.exit(1);
 }
@@ -50,7 +50,7 @@ const run = async (url, options) => {
     // headless: false,
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
-  
+
   const page = await browser.newPage();
   const res = await page.goto(url, {waitUntil: 'networkidle0'});
 
@@ -59,6 +59,6 @@ const run = async (url, options) => {
   console.log(html);
 
   process.exit(0);
-}
+};
 
 run(url);
