@@ -1,12 +1,13 @@
 {
   "name": "domcurl",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A cUrl-like utility that fetches a page and renders the DOM after the `load` event.",
   "main": "./index.js",
   "bin": {
     "domcurl": "./index.js"
   },
   "scripts": {
+    "domcurl": "node ./index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
