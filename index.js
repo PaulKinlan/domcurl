@@ -19,10 +19,12 @@
 const puppeteer = require('puppeteer');
 const minimist = require('minimist');
 const process = require('process');
+const { URL } = require('url');
 
 const args = minimist(process.argv.slice(2), {
   alias: {
-    h: 'help'
+    h: 'help',
+    v: 'verbose'
   }
 });
 
@@ -37,11 +39,23 @@ if (args['version']) {
   return;
 }
 
-const url = args['_'][0];
+const url = new URL(args['_'][0]);
+
+const options = {
+  requestHeader: (!!args['v']),
+  responseHeader: (!!args['v'])
+};
 
 if (!!url == false) {
   console.log('URL must be specificed');
   process.exit(1);
+}
+
+const printHeaders = (headers, preamble) => {
+  const headersEntries = Object.entries(headers);
+  for (const header of headersEntries) {
+    console.log(`${preamble} ${header[0]}: ${header[1]}`);
+  }
 }
 
 const run = async (url, options) => {
@@ -52,7 +66,14 @@ const run = async (url, options) => {
   });
 
   const page = await browser.newPage();
-  const res = await page.goto(url, {waitUntil: 'networkidle0'});
+  const response = await page.goto(url, {waitUntil: 'networkidle0'});
+  if (options.responseHeader) {
+    const request = response.request();
+    console.log(`> ${request.method()} ${url.pathname}`);
+    console.log(`> Host: ${url.host}`);
+    printHeaders(request.headers(), '>');
+    printHeaders(response.headers(), '<');
+  }
 
   const html = await page.content();
 
@@ -61,4 +82,4 @@ const run = async (url, options) => {
   process.exit(0);
 };
 
-run(url);
+run(url, options);
