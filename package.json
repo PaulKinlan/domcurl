@@ -1,0 +1,22 @@
+{
+  "name": "domcurl",
+  "version": "1.0.0",
+  "description": "A cUrl-like utility that fetches a page and renders the DOM after the `load` event.",
+  "main": "index.js",
+  "bin": {
+    "domcurl": "./index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "eslint": "^4.18.1",
+    "eslint-config-google": "^0.9.1"
+  },
+  "dependencies": {
+    "minimist": "^1.2.0",
+    "puppeteer": "^1.1.0"
+  }
+}
