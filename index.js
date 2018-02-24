@@ -62,7 +62,7 @@ try {
   return;
 }
 
-const url = new URL(args['_'][0]);
+const url = new URL(args['url'] || args['_'][0]);
 
 const options = {
   requestHeader: (!!args['v']),
