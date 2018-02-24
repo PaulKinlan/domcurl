@@ -27,6 +27,7 @@ const args = minimist(process.argv.slice(2), {
     m: 'max-time',
     v: 'verbose',
     A: 'user-agent',
+    H: 'header',
     e: 'referer'
   },
   default: {
@@ -89,13 +90,41 @@ try {
   return;
 }
 
+const generateRequestHeaders = (headers) => {
+  if (headers) {
+    const requestDict = {};
+    let headerValue;
+    let headerName;
+
+    if (headers instanceof Array) {
+      headers.forEach(header => {
+        const i = header.indexOf(':');
+        headerName = header.substr(0, i);
+        headerValue = header.substr(i+1);
+        requestDict[headerName] = headerValue;
+      });
+    } else {
+      const i = headers.indexOf(':');
+      headerName = headers.substr(0, i);
+      headerValue = headers.substr(i+1);
+      requestDict[headerName] = headerValue;
+    }
+    return requestDict;
+  }
+
+  return;
+};
+
+const headers = generateRequestHeaders(args['H']);
+
 const options = {
   requestHeader: (!!args['v']),
   responseHeader: (!!args['v']),
   waitUntil: args['waituntil'],
   maxTime: parseInt(args['max-time']) * 1000,
   userAgent: args['user-agent'],
-  referer: referer
+  referer: referer,
+  headers: headers
 };
 
 if (!!url == false) {
@@ -122,6 +151,10 @@ const run = async (url, options) => {
 
     if (options.userAgent) {
       await page.setUserAgent(options.userAgent);
+    }
+
+    if (options.headers) {
+      await page.setExtraHTTPHeaders(options.headers);
     }
 
     page.on('request', request => {
