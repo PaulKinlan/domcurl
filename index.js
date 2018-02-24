@@ -25,7 +25,8 @@ const args = minimist(process.argv.slice(2), {
   alias: {
     h: 'help',
     m: 'max-time',
-    v: 'verbose'
+    v: 'verbose',
+    A: 'user-agent'
   },
   default: {
     'waituntil': 'networkidle0',
@@ -68,7 +69,8 @@ const options = {
   requestHeader: (!!args['v']),
   responseHeader: (!!args['v']),
   waitUntil: args['waituntil'],
-  maxTime: parseInt(args['max-time']) * 1000
+  maxTime: parseInt(args['max-time']) * 1000,
+  userAgent: args['user-agent']
 };
 
 if (!!url == false) {
@@ -91,6 +93,11 @@ const run = async (url, options) => {
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     const page = await browser.newPage();
+
+    if (options.userAgent) {
+      await page.setUserAgent(options.userAgent);
+    }
+
     const response = await page.goto(url, {
       timeout: options.maxTime,
       waitUntil: options.waitUtil
