@@ -24,10 +24,12 @@ const { URL } = require('url');
 const args = minimist(process.argv.slice(2), {
   alias: {
     h: 'help',
+    m: 'max-time',
     v: 'verbose'
   },
-  defaults: {
-    'waituntil': 'networkidle0'
+  default: {
+    'waituntil': 'networkidle0',
+    'max-time': 30
   }
 });
 
@@ -49,12 +51,24 @@ if (waitUnitlValues.indexOf(args['waituntil']) == -1) {
   return;
 }
 
+try {
+  if (isFinite(args['max-time']) === false && args['max-time'] > 0) {
+    console.log(`--max-time can only be a number greater than 0`);
+    return;
+  }
+} catch (err) {
+  console.log(`--max-time can only be a number greater than 0`, err);
+  return;
+}
+
+
 const url = new URL(args['_'][0]);
 
 const options = {
   requestHeader: (!!args['v']),
   responseHeader: (!!args['v']),
-  waitUntil: args['waituntil']
+  waitUntil: args['waituntil'],
+  maxTime: parseInt(args['max-time']) * 1000
 };
 
 if (!!url == false) {
@@ -70,27 +84,35 @@ const printHeaders = (headers, preamble) => {
 }
 
 const run = async (url, options) => {
-  const browser = await puppeteer.launch({
-    // dumpio: true,
-    // headless: false,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  });
+  try {
+    const browser = await puppeteer.launch({
+      // dumpio: true,
+      // headless: false,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+    const page = await browser.newPage();
+    const response = await page.goto(url, {
+      timeout: options.maxTime,
+      waitUntil: options.waitUtil
+    });
 
-  const page = await browser.newPage();
-  const response = await page.goto(url, {waitUntil: options.waitUtils});
-  if (options.responseHeader) {
-    const request = response.request();
-    console.log(`> ${request.method()} ${url.pathname} `);
-    console.log(`> Host: ${url.host}`);
-    printHeaders(request.headers(), '>');
-    printHeaders(response.headers(), '<');
+    if (options.responseHeader) {
+      const request = response.request();
+      console.log(`> ${request.method()} ${url.pathname} `);
+      console.log(`> Host: ${url.host}`);
+      printHeaders(request.headers(), '>');
+      printHeaders(response.headers(), '<');
+    }
+
+    const html = await page.content();
+
+    console.log(html);
+
+    process.exit(0);
+  } catch (err) {
+    console.error(err);
+    process.exit(1);
   }
-
-  const html = await page.content();
-
-  console.log(html);
-
-  process.exit(0);
 };
 
 run(url, options);
