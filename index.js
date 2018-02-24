@@ -19,7 +19,7 @@
 const puppeteer = require('puppeteer');
 const minimist = require('minimist');
 const process = require('process');
-const { URL } = require('url');
+const {URL} = require('url');
 
 const args = minimist(process.argv.slice(2), {
   alias: {
@@ -37,12 +37,14 @@ const args = minimist(process.argv.slice(2), {
 
 if (args['h']) {
   console.log('> domcurl [url]');
+  process.exitCode = 0;
   return;
 }
 
 if (args['version']) {
   const packageInfo = require('./package.json');
   console.log(packageInfo.version);
+  process.exitCode = 0;
   return;
 }
 
@@ -50,20 +52,42 @@ const waitUnitlValues = ['load', 'domcontentloaded', 'networkidle0', 'networkidl
 
 if (waitUnitlValues.indexOf(args['waituntil']) == -1) {
   console.log(`--waituntil can only be one of: ${waitUnitlValues.join(', ')}`);
+  process.exitCode = 1;
   return;
 }
 
 try {
   if (isFinite(args['max-time']) === false && args['max-time'] > 0) {
     console.log(`--max-time can only be a number greater than 0`);
+    process.exitCode = 1;
     return;
   }
 } catch (err) {
   console.log(`--max-time can only be a number greater than 0`, err);
+  process.exitCode = 1;
   return;
 }
 
-const url = new URL(args['url'] || args['_'][0]);
+let url;
+let referer;
+
+try {
+  url = new URL(args['url'] || args['_'][0]);
+} catch (err) {
+  console.log(`--url or default value is not a valid URL`);
+  process.exitCode = 1;
+  return;
+}
+
+try {
+  if (args['e']) {
+    referer = new URL(args['e']).href;
+  }
+} catch (err) {
+  console.log(`-e --referer is not a valid URL`);
+  process.exitCode = 1;
+  return;
+}
 
 const options = {
   requestHeader: (!!args['v']),
@@ -71,12 +95,13 @@ const options = {
   waitUntil: args['waituntil'],
   maxTime: parseInt(args['max-time']) * 1000,
   userAgent: args['user-agent'],
-  referer: new URL(args['e']).href
+  referer: referer
 };
 
 if (!!url == false) {
   console.log('URL must be specificed');
-  process.exit(1);
+  process.exitCode = 1;
+  return;
 }
 
 const printHeaders = (headers, preamble) => {
@@ -84,7 +109,7 @@ const printHeaders = (headers, preamble) => {
   for (const header of headersEntries) {
     console.log(`${preamble} ${header[0]}: ${header[1]}`);
   }
-}
+};
 
 const run = async (url, options) => {
   try {
