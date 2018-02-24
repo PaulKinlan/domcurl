@@ -62,7 +62,6 @@ try {
   return;
 }
 
-
 const url = new URL(args['_'][0]);
 
 const options = {
@@ -98,16 +97,20 @@ const run = async (url, options) => {
       await page.setUserAgent(options.userAgent);
     }
 
+    page.on('request', request => {
+      if (request.url() === url.href && options.requestHeader) {
+        console.log(`> ${request.method()} ${url.pathname} `);
+        console.log(`> Host: ${url.host}`);
+        printHeaders(request.headers(), '>');
+      }
+    });
+
     const response = await page.goto(url, {
       timeout: options.maxTime,
       waitUntil: options.waitUtil
     });
 
     if (options.responseHeader) {
-      const request = response.request();
-      console.log(`> ${request.method()} ${url.pathname} `);
-      console.log(`> Host: ${url.host}`);
-      printHeaders(request.headers(), '>');
       printHeaders(response.headers(), '<');
     }
 
