@@ -26,7 +26,8 @@ const args = minimist(process.argv.slice(2), {
     h: 'help',
     m: 'max-time',
     v: 'verbose',
-    A: 'user-agent'
+    A: 'user-agent',
+    e: 'referer'
   },
   default: {
     'waituntil': 'networkidle0',
@@ -69,7 +70,8 @@ const options = {
   responseHeader: (!!args['v']),
   waitUntil: args['waituntil'],
   maxTime: parseInt(args['max-time']) * 1000,
-  userAgent: args['user-agent']
+  userAgent: args['user-agent'],
+  referer: new URL(args['e']).href
 };
 
 if (!!url == false) {
@@ -104,6 +106,14 @@ const run = async (url, options) => {
         printHeaders(request.headers(), '>');
       }
     });
+
+    const headers = {};
+
+    if (options.referer) {
+      headers['referer'] = options.referer;
+    }
+
+    page.setExtraHTTPHeaders(headers);
 
     const response = await page.goto(url, {
       timeout: options.maxTime,
