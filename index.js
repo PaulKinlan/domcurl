@@ -148,13 +148,10 @@ const run = async (url, options) => {
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     const page = await browser.newPage();
+    const headers = {};
 
     if (options.userAgent) {
       await page.setUserAgent(options.userAgent);
-    }
-
-    if (options.headers) {
-      await page.setExtraHTTPHeaders(options.headers);
     }
 
     page.on('request', request => {
@@ -165,13 +162,13 @@ const run = async (url, options) => {
       }
     });
 
-    const headers = {};
-
     if (options.referer) {
       headers['referer'] = options.referer;
     }
 
-    page.setExtraHTTPHeaders(headers);
+    Object.assign(headers, options.headers);
+
+    await page.setExtraHTTPHeaders(headers);
 
     const response = await page.goto(url, {
       timeout: options.maxTime,
