@@ -25,6 +25,9 @@ const args = minimist(process.argv.slice(2), {
   alias: {
     h: 'help',
     v: 'verbose'
+  },
+  defaults: {
+    'waituntil': 'networkidle0'
   }
 });
 
@@ -39,11 +42,19 @@ if (args['version']) {
   return;
 }
 
+const waitUnitlValues = ['load', 'domcontentloaded', 'networkidle0', 'networkidle1'];
+
+if (waitUnitlValues.indexOf(args['waituntil']) == -1) {
+  console.log(`--waituntil can only be one of: ${waitUnitlValues.join(', ')}`);
+  return;
+}
+
 const url = new URL(args['_'][0]);
 
 const options = {
   requestHeader: (!!args['v']),
-  responseHeader: (!!args['v'])
+  responseHeader: (!!args['v']),
+  waitUntil: args['waituntil']
 };
 
 if (!!url == false) {
@@ -66,7 +77,7 @@ const run = async (url, options) => {
   });
 
   const page = await browser.newPage();
-  const response = await page.goto(url, {waitUntil: 'networkidle0'});
+  const response = await page.goto(url, {waitUntil: options.waitUtils});
   if (options.responseHeader) {
     const request = response.request();
     console.log(`> ${request.method()} ${url.pathname} `);
