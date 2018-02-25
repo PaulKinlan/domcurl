@@ -28,7 +28,8 @@ const args = minimist(process.argv.slice(2), {
     v: 'verbose',
     A: 'user-agent',
     H: 'header',
-    e: 'referer'
+    e: 'referer',
+    b: 'cookie'
   },
   default: {
     'waituntil': 'networkidle0',
@@ -115,7 +116,63 @@ const generateRequestHeaders = (headers) => {
   return;
 };
 
+const generateCookiesHeaders = (cookieStrings, url) => {
+  const parseCookieString = cookieString => {  
+    const core = cookieString.match(/^([^=]+?)=([^;]+)(.*)/);
+    const headerName = core[1];
+    const headerValue = core[2];
+    const rest = core[3];
+    
+    const cookie = {
+      name: headerName,
+      value: headerValue
+    };
+
+    if (rest) {
+      const path = rest.match(/; Path=([^;]+)[;]*/);
+      const domain = rest.match(/; Domain=([^;]+)[;]*/);
+      const secure = rest.match(/; Secure[;]*/);
+      const httpOnly = rest.match(/; HttpOnly[;]*/);
+      const sameSite = rest.match(/; Samesite=(Lax|Strict)[;]*/);
+      const expires = rest.match(/; Expires=(\d+)[;]*/);
+
+      if (domain) {
+        cookie.domain = domain[1];
+      } else {
+        cookie.url = url;
+      }
+
+      if (expires) {
+        cookie.expires = expires[1];
+      } else {
+        cookie.session = true;
+      }
+
+      cookie.httpOnly = (!!httpOnly);
+      cookie.secure = (!!secure);
+
+      if (path) cookie.path = path[1];
+      if (sameSite) cookie.sameSite = sameSite[1];
+    }
+
+    return cookie;
+  };
+
+  if (cookieStrings) {
+    if (cookieStrings instanceof Array) {
+      return cookieStrings.map(cookieString => {
+        parseCookieString(cookieString);
+      });
+    } else {
+      return [parseCookieString(cookieStrings)];
+    }
+  }
+
+  return;
+};
+
 const headers = generateRequestHeaders(args['H']);
+const cookies = generateCookiesHeaders(args['b'], url.href);
 
 const options = {
   requestHeader: (!!args['v']),
@@ -124,7 +181,8 @@ const options = {
   maxTime: parseInt(args['max-time']) * 1000,
   userAgent: args['user-agent'],
   referer: referer,
-  headers: headers
+  headers: headers,
+  cookies: cookies
 };
 
 if (!!url == false) {
@@ -156,11 +214,16 @@ const run = async (url, options) => {
 
     page.on('request', request => {
       if (request.url() === url.href && options.requestHeader) {
+        console.log(request)
         console.log(`> ${request.method()} ${url.pathname} `);
         console.log(`> Host: ${url.host}`);
         printHeaders(request.headers(), '>');
       }
     });
+
+    if (options.cookies) {
+      await page.setCookie(...options.cookies);
+    }
 
     if (options.referer) {
       headers['referer'] = options.referer;
