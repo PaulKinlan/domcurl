@@ -214,7 +214,6 @@ const run = async (url, options) => {
 
     page.on('request', request => {
       if (request.url() === url.href && options.requestHeader) {
-        console.log(request)
         console.log(`> ${request.method()} ${url.pathname} `);
         console.log(`> Host: ${url.host}`);
         printHeaders(request.headers(), '>');

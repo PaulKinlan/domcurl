@@ -1,6 +1,6 @@
 {
   "name": "domcurl",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A cUrl-like utility that fetches a page and renders the DOM after the `load` event.",
   "main": "./index.js",
   "bin": {
