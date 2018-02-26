@@ -47,3 +47,9 @@ the command will wait before it errors.
 or
 
 `domcurl --url https://example.com --max-time 60`
+
+### Specify a trace file
+
+Output a Chrome DevTools trace file (including screenshots.)
+
+`domcurl --url https://example.com --trace test.json`
