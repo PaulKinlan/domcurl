@@ -50,7 +50,7 @@ or
 
 ### Set a wait selector
 
-Set a selector to make domcurl wait before response. wait order is rely on agrument order
+Set a selector to make domcurl wait before response (wait order is rely on agrument order.)
 
 `domcurl --url https://example.com --wait-selector "#feed-list > li:nth-child(2)"`
 
