@@ -117,12 +117,12 @@ const generateRequestHeaders = (headers) => {
 };
 
 const generateCookiesHeaders = (cookieStrings, url) => {
-  const parseCookieString = cookieString => {  
+  const parseCookieString = cookieString => {
     const core = cookieString.match(/^([^=]+?)=([^;]+)(.*)/);
     const headerName = core[1];
     const headerValue = core[2];
     const rest = core[3];
-    
+
     const cookie = {
       name: headerName,
       value: headerValue
@@ -178,6 +178,7 @@ const options = {
   requestHeader: (!!args['v']),
   responseHeader: (!!args['v']),
   waitUntil: args['waituntil'],
+  waitSelector: args['wait-selector'],
   maxTime: parseInt(args['max-time']) * 1000,
   userAgent: args['user-agent'],
   referer: referer,
@@ -239,6 +240,17 @@ const run = async (url, options) => {
 
     if (options.responseHeader) {
       printHeaders(response.headers(), '<');
+    }
+
+    if (options.waitSelector) {
+      if (options.waitSelector instanceof Array) {
+        for (const selector of options.waitSelector) {
+          await page.waitFor(selector)
+        }
+      } else {
+        await page.waitFor(options.waitSelector)
+      }
+
     }
 
     const html = await page.content();
