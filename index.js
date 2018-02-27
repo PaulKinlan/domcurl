@@ -58,6 +58,16 @@ if (waitUnitlValues.indexOf(args['waituntil']) == -1) {
   return;
 }
 
+let trace;
+
+if (args['trace'] && typeof(args['trace']) == 'string' && args['trace'].length > 0) {
+  trace = args['trace'];
+} else if (args['trace'] && typeof(args['trace']) !== 'string' && args['trace'].length == 0) {
+  console.log(`--trace must be a string`);
+  process.exitCode = 1;
+  return;
+}
+
 try {
   if (isFinite(args['max-time']) === false && args['max-time'] > 0) {
     console.log(`--max-time can only be a number greater than 0`);
@@ -183,7 +193,8 @@ const options = {
   userAgent: args['user-agent'],
   referer: referer,
   headers: headers,
-  cookies: cookies
+  cookies: cookies,
+  trace: trace
 };
 
 if (!!url == false) {
@@ -233,10 +244,18 @@ const run = async (url, options) => {
 
     await page.setExtraHTTPHeaders(headers);
 
+    if (options.trace) {
+      await page.tracing.start({path: options.trace, screenshots: true});
+    }
+
     const response = await page.goto(url, {
       timeout: options.maxTime,
       waitUntil: options.waitUtil
     });
+
+    if (options.trace) {
+      await page.tracing.stop();
+    }
 
     if (options.responseHeader) {
       printHeaders(response.headers(), '<');
@@ -254,7 +273,6 @@ const run = async (url, options) => {
     }
 
     const html = await page.content();
-
     console.log(html);
 
     process.exit(0);
