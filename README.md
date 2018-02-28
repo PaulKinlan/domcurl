@@ -144,6 +144,14 @@ Renders more details about the request and the response.
 </body></html>
 ```
 
+### Send output to a file
+
+`domcurl --url https://example.com -o test.txt`
+
+or
+
+`domcurl --url https://example.com --output test.txt`
+
 ### Set a custom header
 
 `domcurl --url https://example.com -H 'x-test:test1' -H  'x-test2:http://test.com'`
