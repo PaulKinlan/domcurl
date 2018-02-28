@@ -127,12 +127,11 @@ const generateRequestHeaders = (headers) => {
 };
 
 const generateCookiesHeaders = (cookieStrings, url) => {
-  const parseCookieString = cookieString => {  
+  const parseCookieString = cookieString => {
     const core = cookieString.match(/^([^=]+?)=([^;]+)(.*)/);
     const headerName = core[1];
     const headerValue = core[2];
     const rest = core[3];
-    
     const cookie = {
       name: headerName,
       value: headerValue
