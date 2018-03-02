@@ -210,6 +210,16 @@ const printHeaders = (headers, preamble) => {
   }
 };
 
+const waitSelector = async (selector) => {
+  try {
+    await page.waitFor(selector)
+  } catch (error) {
+    if (args['v']) {
+      console.log('< Selector' + selector + ' is not found')
+    }
+  }
+}
+
 const run = async (url, options) => {
   try {
     const browser = await puppeteer.launch({
@@ -262,13 +272,14 @@ const run = async (url, options) => {
     }
 
     if (options.waitSelector) {
-      if (options.waitSelector instanceof Array) {
-        for (const selector of options.waitSelector) {
-          await page.waitFor(selector)
+
+        if (options.waitSelector instanceof Array) {
+          for (const selector of options.waitSelector) {
+            await waitSelector(selector)
+          }
+        } else {
+          await waitSelector(options.waitSelector)
         }
-      } else {
-        await page.waitFor(options.waitSelector)
-      }
 
     }
 
