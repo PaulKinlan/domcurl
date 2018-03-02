@@ -19,6 +19,7 @@
 const puppeteer = require('puppeteer');
 const minimist = require('minimist');
 const process = require('process');
+const fs = require('fs');
 const {URL} = require('url');
 
 const args = minimist(process.argv.slice(2), {
@@ -29,7 +30,8 @@ const args = minimist(process.argv.slice(2), {
     A: 'user-agent',
     H: 'header',
     e: 'referer',
-    b: 'cookie'
+    b: 'cookie',
+    o: 'output'
   },
   default: {
     'waituntil': 'networkidle0',
@@ -47,6 +49,15 @@ if (args['version']) {
   const packageInfo = require('./package.json');
   console.log(packageInfo.version);
   process.exitCode = 0;
+  return;
+}
+
+let outputfile;
+if (args['output'] && args['output'].length > 0) {
+  outputfile = args['output'];
+} else if (args['output'] === true) {
+  console.log(`--output must be a filename if argument is present`);
+  process.exitCode = 1;
   return;
 }
 
@@ -132,7 +143,6 @@ const generateCookiesHeaders = (cookieStrings, url) => {
     const headerName = core[1];
     const headerValue = core[2];
     const rest = core[3];
-
     const cookie = {
       name: headerName,
       value: headerValue
@@ -191,6 +201,7 @@ const options = {
   waitSelector: args['wait-selector'],
   maxTime: parseInt(args['max-time']) * 1000,
   userAgent: args['user-agent'],
+  outputFile: outputfile,
   referer: referer,
   headers: headers,
   cookies: cookies,
@@ -284,7 +295,11 @@ const run = async (url, options) => {
     }
 
     const html = await page.content();
-    console.log(html);
+    if (options.outputFile) {
+      fs.writeFileSync(options.outputFile, html);
+    } else {
+      console.log(html);
+    }
 
     process.exit(0);
   } catch (err) {
