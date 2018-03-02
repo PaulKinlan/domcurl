@@ -198,6 +198,7 @@ const options = {
   requestHeader: (!!args['v']),
   responseHeader: (!!args['v']),
   waitUntil: args['waituntil'],
+  waitSelector: args['wait-selector'],
   maxTime: parseInt(args['max-time']) * 1000,
   userAgent: args['user-agent'],
   outputFile: outputfile,
@@ -219,6 +220,16 @@ const printHeaders = (headers, preamble) => {
     console.log(`${preamble} ${header[0]}: ${header[1]}`);
   }
 };
+
+const waitSelector = async (selector) => {
+  try {
+    await page.waitFor(selector)
+  } catch (error) {
+    if (args['v']) {
+      console.log('< Selector' + selector + ' is not found')
+    }
+  }
+}
 
 const run = async (url, options) => {
   try {
@@ -269,6 +280,18 @@ const run = async (url, options) => {
 
     if (options.responseHeader) {
       printHeaders(response.headers(), '<');
+    }
+
+    if (options.waitSelector) {
+
+        if (options.waitSelector instanceof Array) {
+          for (const selector of options.waitSelector) {
+            await waitSelector(selector)
+          }
+        } else {
+          await waitSelector(options.waitSelector)
+        }
+
     }
 
     const html = await page.content();
