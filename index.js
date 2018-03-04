@@ -21,6 +21,7 @@ const minimist = require('minimist');
 const process = require('process');
 const fs = require('fs');
 const {URL} = require('url');
+const {Logger, ErrorLogger} = require('./libs').output;
 
 const args = minimist(process.argv.slice(2), {
   alias: {
@@ -39,32 +40,42 @@ const args = minimist(process.argv.slice(2), {
   }
 });
 
+const logger = new Logger();
+const errorLogger = new ErrorLogger();
+
+if (args['output'] && args['output'].length > 0) {
+  logger.stream = fs.createWriteStream(args['output']);
+} else if (args['output'] === true) {
+  errorLogger.log(`--output must be a filename if argument is present`);
+  process.exitCode = 1;
+  return;
+}
+
+if (args['stderr'] && args['stderr'].length > 0) {
+  errorLogger.stream = fs.createWriteStream(args['stderr']);
+} else if (args['stderr'] === true) {
+  errorLogger.log(`--output must be a filename if argument is present`);
+  process.exitCode = 1;
+  return;
+}
+
 if (args['h']) {
-  console.log('> domcurl [url]');
+  logger.log('> domcurl [url]');
   process.exitCode = 0;
   return;
 }
 
 if (args['version']) {
   const packageInfo = require('./package.json');
-  console.log(packageInfo.version);
+  logger.log(packageInfo.version);
   process.exitCode = 0;
-  return;
-}
-
-let outputfile;
-if (args['output'] && args['output'].length > 0) {
-  outputfile = args['output'];
-} else if (args['output'] === true) {
-  console.log(`--output must be a filename if argument is present`);
-  process.exitCode = 1;
   return;
 }
 
 const waitUnitlValues = ['load', 'domcontentloaded', 'networkidle0', 'networkidle1'];
 
 if (waitUnitlValues.indexOf(args['waituntil']) == -1) {
-  console.log(`--waituntil can only be one of: ${waitUnitlValues.join(', ')}`);
+  errorLogger.log(`--waituntil can only be one of: ${waitUnitlValues.join(', ')}`);
   process.exitCode = 1;
   return;
 }
@@ -74,19 +85,19 @@ let trace;
 if (args['trace'] && typeof(args['trace']) == 'string' && args['trace'].length > 0) {
   trace = args['trace'];
 } else if (args['trace'] && typeof(args['trace']) !== 'string' && args['trace'].length == 0) {
-  console.log(`--trace must be a string`);
+  errorLogger.log(`--trace must be a string`);
   process.exitCode = 1;
   return;
 }
 
 try {
   if (isFinite(args['max-time']) === false && args['max-time'] > 0) {
-    console.log(`--max-time can only be a number greater than 0`);
+    errorLogger.log(`--max-time can only be a number greater than 0`);
     process.exitCode = 1;
     return;
   }
 } catch (err) {
-  console.log(`--max-time can only be a number greater than 0`, err);
+  errorLogger.log(`--max-time can only be a number greater than 0`, err);
   process.exitCode = 1;
   return;
 }
@@ -97,7 +108,7 @@ let referer;
 try {
   url = new URL(args['url'] || args['_'][0]);
 } catch (err) {
-  console.log(`--url or default value is not a valid URL`);
+  errorLogger.log(`--url or default value is not a valid URL`);
   process.exitCode = 1;
   return;
 }
@@ -107,7 +118,7 @@ try {
     referer = new URL(args['e']).href;
   }
 } catch (err) {
-  console.log(`-e --referer is not a valid URL`);
+  errorLogger.log(`-e --referer is not a valid URL`);
   process.exitCode = 1;
   return;
 }
@@ -200,7 +211,8 @@ const options = {
   waitUntil: args['waituntil'],
   maxTime: parseInt(args['max-time']) * 1000,
   userAgent: args['user-agent'],
-  outputFile: outputfile,
+  logger: logger,
+  errorLogger: errorLogger,
   referer: referer,
   headers: headers,
   cookies: cookies,
@@ -213,14 +225,17 @@ if (!!url == false) {
   return;
 }
 
-const printHeaders = (headers, preamble) => {
+const printHeaders = (headers, preamble, logger) => {
   const headersEntries = Object.entries(headers);
   for (const header of headersEntries) {
-    console.log(`${preamble} ${header[0]}: ${header[1]}`);
+    logger.log(`${preamble} ${header[0]}: ${header[1]}`);
   }
 };
 
 const run = async (url, options) => {
+  const logger = options.logger;
+  const errorLogger = options.errorLogger;
+
   try {
     const browser = await puppeteer.launch({
       // dumpio: true,
@@ -236,9 +251,9 @@ const run = async (url, options) => {
 
     page.on('request', request => {
       if (request.url() === url.href && options.requestHeader) {
-        console.log(`> ${request.method()} ${url.pathname} `);
-        console.log(`> Host: ${url.host}`);
-        printHeaders(request.headers(), '>');
+        logger.log(`> ${request.method()} ${url.pathname} `);
+        logger.log(`> Host: ${url.host}`);
+        printHeaders(request.headers(), '>', logger);
       }
     });
 
@@ -272,15 +287,11 @@ const run = async (url, options) => {
     }
 
     const html = await page.content();
-    if (options.outputFile) {
-      fs.writeFileSync(options.outputFile, html);
-    } else {
-      console.log(html);
-    }
+    logger.log(html);
 
     process.exit(0);
   } catch (err) {
-    console.error(err);
+    errorLogger.error(err);
     process.exit(1);
   }
 };
