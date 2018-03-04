@@ -1,3 +1,4 @@
 module.exports = {
-  output: require('./output.js')
+  output: require('./output.js'),
+  runner: require('./runner.js')
 };

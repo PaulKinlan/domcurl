@@ -16,12 +16,12 @@
  * limitations under the License.
  */
 
-const puppeteer = require('puppeteer');
 const minimist = require('minimist');
 const process = require('process');
 const fs = require('fs');
 const {URL} = require('url');
 const {Logger, ErrorLogger} = require('./libs').output;
+const {run} = require('./libs').runner;
 
 const args = minimist(process.argv.slice(2), {
   alias: {
@@ -42,6 +42,10 @@ const args = minimist(process.argv.slice(2), {
 
 const logger = new Logger();
 const errorLogger = new ErrorLogger();
+const waitUnitlValues = ['load', 'domcontentloaded', 'networkidle0', 'networkidle1'];
+let trace;
+let url;
+let referer;
 
 if (args['output'] && args['output'].length > 0) {
   logger.stream = fs.createWriteStream(args['output']);
@@ -72,15 +76,11 @@ if (args['version']) {
   return;
 }
 
-const waitUnitlValues = ['load', 'domcontentloaded', 'networkidle0', 'networkidle1'];
-
 if (waitUnitlValues.indexOf(args['waituntil']) == -1) {
   errorLogger.log(`--waituntil can only be one of: ${waitUnitlValues.join(', ')}`);
   process.exitCode = 1;
   return;
 }
-
-let trace;
 
 if (args['trace'] && typeof(args['trace']) == 'string' && args['trace'].length > 0) {
   trace = args['trace'];
@@ -101,9 +101,6 @@ try {
   process.exitCode = 1;
   return;
 }
-
-let url;
-let referer;
 
 try {
   url = new URL(args['url'] || args['_'][0]);
@@ -224,76 +221,5 @@ if (!!url == false) {
   process.exitCode = 1;
   return;
 }
-
-const printHeaders = (headers, preamble, logger) => {
-  const headersEntries = Object.entries(headers);
-  for (const header of headersEntries) {
-    logger.log(`${preamble} ${header[0]}: ${header[1]}`);
-  }
-};
-
-const run = async (url, options) => {
-  const logger = options.logger;
-  const errorLogger = options.errorLogger;
-
-  try {
-    const browser = await puppeteer.launch({
-      // dumpio: true,
-      // headless: false,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
-    const page = await browser.newPage();
-    const headers = {};
-
-    if (options.userAgent) {
-      await page.setUserAgent(options.userAgent);
-    }
-
-    page.on('request', request => {
-      if (request.url() === url.href && options.requestHeader) {
-        logger.log(`> ${request.method()} ${url.pathname} `);
-        logger.log(`> Host: ${url.host}`);
-        printHeaders(request.headers(), '>', logger);
-      }
-    });
-
-    if (options.cookies) {
-      await page.setCookie(...options.cookies);
-    }
-
-    if (options.referer) {
-      headers['referer'] = options.referer;
-    }
-
-    Object.assign(headers, options.headers);
-
-    await page.setExtraHTTPHeaders(headers);
-
-    if (options.trace) {
-      await page.tracing.start({path: options.trace, screenshots: true});
-    }
-
-    const response = await page.goto(url, {
-      timeout: options.maxTime,
-      waitUntil: options.waitUtil
-    });
-
-    if (options.trace) {
-      await page.tracing.stop();
-    }
-
-    if (options.responseHeader) {
-      printHeaders(response.headers(), '<');
-    }
-
-    const html = await page.content();
-    logger.log(html);
-
-    process.exit(0);
-  } catch (err) {
-    errorLogger.error(err);
-    process.exit(1);
-  }
-};
 
 run(url, options);
