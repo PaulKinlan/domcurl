@@ -21,7 +21,7 @@ const process = require('process');
 const fs = require('fs');
 const {URL} = require('url');
 const {Logger, ErrorLogger} = require('./libs').output;
-const {run} = require('./libs').runner;
+const {domcurl} = require('./libs').domcurl;
 
 const args = minimist(process.argv.slice(2), {
   alias: {
@@ -222,4 +222,4 @@ if (!!url == false) {
   return;
 }
 
-run(url, options);
+domcurl(url, options);

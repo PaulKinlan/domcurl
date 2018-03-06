@@ -1,3 +1,4 @@
+const {Logger, ErrorLogger} = require('./output.js');
 const puppeteer = require('puppeteer');
 
 const printHeaders = (headers, preamble, logger) => {
@@ -7,9 +8,9 @@ const printHeaders = (headers, preamble, logger) => {
   }
 };
 
-const run = async (url, options) => {
-  const logger = options.logger;
-  const errorLogger = options.errorLogger;
+const domcurl = async (url, options) => {
+  const logger = options.logger || new Logger();
+  const errorLogger = options.errorLogger || new ErrorLogger();
 
   try {
     const browser = await puppeteer.launch({
@@ -72,5 +73,5 @@ const run = async (url, options) => {
 };
 
 module.exports = {
-  run: run
+  domcurl: domcurl
 };
