@@ -182,3 +182,13 @@ or
 Output a Chrome DevTools trace file (including screenshots.)
 
 `domcurl --url https://example.com --trace test.json`
+
+## Using as a module
+
+`npm i domcurl`
+
+`
+const {domcurl} = require('domcurl');
+
+domcurl(`https://paul.kinlan.me/`, {});
+`
