@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "minimist": "^1.2.0",
-    "puppeteer": "^1.1.0"
+    "puppeteer": "^19.4.0"
   },
   "repository": "https://github.com/PaulKinlan/domcurl"
 }
