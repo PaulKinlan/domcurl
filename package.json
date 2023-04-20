@@ -17,7 +17,7 @@
   "author": "Paul Kinlan",
   "license": "Apache-2.0",
   "devDependencies": {
-    "eslint": "^4.18.1",
+    "eslint": "^8.38.0",
     "eslint-config-google": "^0.9.1"
   },
   "dependencies": {
