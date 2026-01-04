@@ -41,11 +41,6 @@ const domcurl = async (url, options) => {
 
           if (options.data) {
             overrides.postData = options.data;
-            // Set content-type header if not already set for POST/PUT
-            if (!headers['content-type'] && !headers['Content-Type']) {
-              headers['content-type'] =
-                  'application/x-www-form-urlencoded';
-            }
           }
 
           if (options.requestHeader) {
@@ -76,6 +71,14 @@ const domcurl = async (url, options) => {
 
     if (options.referer) {
       headers['referer'] = options.referer;
+    }
+
+    // Set content-type header if sending data and not already set
+    if (options.data) {
+      if (!options.headers || (!options.headers['content-type'] &&
+          !options.headers['Content-Type'])) {
+        headers['content-type'] = 'application/x-www-form-urlencoded';
+      }
     }
 
     Object.assign(headers, options.headers);
