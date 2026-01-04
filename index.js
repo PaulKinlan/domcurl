@@ -32,7 +32,9 @@ const args = minimist(process.argv.slice(2), {
     H: 'header',
     e: 'referer',
     b: 'cookie',
-    o: 'output'
+    o: 'output',
+    X: 'request',
+    d: 'data'
   },
   default: {
     'waituntil': 'networkidle0',
@@ -213,7 +215,9 @@ const options = {
   referer: referer,
   headers: headers,
   cookies: cookies,
-  trace: trace
+  trace: trace,
+  method: args['X'] || args['request'],
+  data: args['d'] || args['data']
 };
 
 if (!!url == false) {
