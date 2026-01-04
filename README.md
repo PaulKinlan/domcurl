@@ -152,6 +152,18 @@ or
 
 `domcurl --url https://example.com --output test.txt`
 
+### Redirect stderr to a file
+
+Redirect all writes to stderr to the specified file instead. If the file name is a plain `-`, it is instead written to stdout.
+
+`domcurl --url https://example.com --stderr error.txt`
+
+or redirect stderr to stdout:
+
+`domcurl --url https://example.com --stderr -`
+
+If this option is used several times, the last one will be used.
+
 ### Set a custom header
 
 `domcurl --url https://example.com -H 'x-test:test1' -H  'x-test2:http://test.com'`
