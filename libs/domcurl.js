@@ -25,6 +25,10 @@ const domcurl = async (url, options) => {
       await page.setUserAgent(options.userAgent);
     }
 
+    if (options.viewport) {
+      await page.setViewport(options.viewport);
+    }
+
     page.on('request', request => {
       if (request.url() === url.href && options.requestHeader) {
         logger.log(`> ${request.method()} ${url.pathname} `);

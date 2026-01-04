@@ -32,7 +32,8 @@ const args = minimist(process.argv.slice(2), {
     H: 'header',
     e: 'referer',
     b: 'cookie',
-    o: 'output'
+    o: 'output',
+    V: 'viewport'
   },
   default: {
     'waituntil': 'networkidle0',
@@ -118,6 +119,23 @@ try {
   errorLogger.log(`-e --referer is not a valid URL`);
   process.exitCode = 1;
   return;
+}
+
+let viewport;
+if (args['viewport']) {
+  const viewportPattern = /^(\d+)x(\d+)$/;
+  const match = args['viewport'].match(viewportPattern);
+
+  if (match) {
+    viewport = {
+      width: parseInt(match[1]),
+      height: parseInt(match[2])
+    };
+  } else {
+    errorLogger.log(`-V --viewport must be in format WIDTHxHEIGHT (e.g., 1920x1080)`);
+    process.exitCode = 1;
+    return;
+  }
 }
 
 const generateRequestHeaders = (headers) => {
@@ -213,7 +231,8 @@ const options = {
   referer: referer,
   headers: headers,
   cookies: cookies,
-  trace: trace
+  trace: trace,
+  viewport: viewport
 };
 
 if (!!url == false) {
