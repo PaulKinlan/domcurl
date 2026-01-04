@@ -51,7 +51,7 @@ const domcurl = async (url, options) => {
 
     const response = await page.goto(url, {
       timeout: options.maxTime,
-      waitUntil: options.waitUtil
+      waitUntil: options.waitUntil
     });
 
     if (options.trace) {
