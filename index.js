@@ -55,12 +55,39 @@ if (args['output'] && args['output'].length > 0) {
   return;
 }
 
-if (args['stderr'] && args['stderr'].length > 0) {
-  errorLogger.stream = fs.createWriteStream(args['stderr']);
-} else if (args['stderr'] === true) {
-  errorLogger.log(`--output must be a filename if argument is present`);
-  process.exitCode = 1;
-  return;
+if (args['stderr']) {
+  let stderrValue = args['stderr'];
+
+  // If multiple --stderr options are provided, use the last one
+  if (Array.isArray(stderrValue)) {
+    stderrValue = stderrValue[stderrValue.length - 1];
+  }
+
+  if (stderrValue === '-') {
+    errorLogger.stream = process.stdout;
+  } else if (stderrValue === true) {
+    // Check if the last '--stderr' in argv is followed by '-'
+    const argv = process.argv;
+    let lastStderrIndex = -1;
+    for (let i = 0; i < argv.length; i++) {
+      if (argv[i] === '--stderr') {
+        lastStderrIndex = i;
+      }
+    }
+    if (lastStderrIndex !== -1 && argv[lastStderrIndex + 1] === '-') {
+      errorLogger.stream = process.stdout;
+    } else {
+      errorLogger.log(`--stderr must be a filename if argument is present`);
+      process.exitCode = 1;
+      return;
+    }
+  } else if (typeof stderrValue === 'string' && stderrValue.length > 0) {
+    errorLogger.stream = fs.createWriteStream(stderrValue);
+  } else {
+    errorLogger.log(`--stderr must be a filename if argument is present`);
+    process.exitCode = 1;
+    return;
+  }
 }
 
 if (args['h']) {
