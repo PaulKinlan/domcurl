@@ -71,7 +71,7 @@ const domcurl = async (url, options) => {
 
     process.exit(0);
   } catch (err) {
-    errorLogger.error(err);
+    errorLogger.log(err);
     process.exit(1);
   }
 };
