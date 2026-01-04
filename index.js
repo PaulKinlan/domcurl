@@ -127,9 +127,21 @@ if (args['viewport']) {
   const match = args['viewport'].match(viewportPattern);
 
   if (match) {
+    const width = parseInt(match[1], 10);
+    const height = parseInt(match[2], 10);
+
+    // Validate reasonable viewport dimensions
+    if (width < 1 || height < 1 || width > 7680 || height > 4320) {
+      errorLogger.log(
+        `-V --viewport dimensions must be between 1-7680 (width) and 1-4320 (height)`
+      );
+      process.exitCode = 1;
+      return;
+    }
+
     viewport = {
-      width: parseInt(match[1]),
-      height: parseInt(match[2])
+      width: width,
+      height: height
     };
   } else {
     errorLogger.log(`-V --viewport must be in format WIDTHxHEIGHT (e.g., 1920x1080)`);
