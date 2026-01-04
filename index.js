@@ -140,8 +140,8 @@ if (args['viewport']) {
     }
 
     viewport = {
-      width: width,
-      height: height
+      width,
+      height
     };
   } else {
     errorLogger.log(`-V --viewport must be in format WIDTHxHEIGHT (e.g., 1920x1080)`);
