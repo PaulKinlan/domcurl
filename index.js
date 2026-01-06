@@ -34,7 +34,8 @@ const args = minimist(process.argv.slice(2), {
     b: 'cookie',
     o: 'output',
     X: 'request',
-    d: 'data'
+    d: 'data',
+    V: 'viewport'
   },
   default: {
     'waituntil': 'networkidle0',
@@ -57,12 +58,39 @@ if (args['output'] && args['output'].length > 0) {
   return;
 }
 
-if (args['stderr'] && args['stderr'].length > 0) {
-  errorLogger.stream = fs.createWriteStream(args['stderr']);
-} else if (args['stderr'] === true) {
-  errorLogger.log(`--output must be a filename if argument is present`);
-  process.exitCode = 1;
-  return;
+if (args['stderr']) {
+  let stderrValue = args['stderr'];
+
+  // If multiple --stderr options are provided, use the last one
+  if (Array.isArray(stderrValue)) {
+    stderrValue = stderrValue[stderrValue.length - 1];
+  }
+
+  if (stderrValue === '-') {
+    errorLogger.stream = process.stdout;
+  } else if (stderrValue === true) {
+    // Check if the last '--stderr' in argv is followed by '-'
+    const argv = process.argv;
+    let lastStderrIndex = -1;
+    for (let i = 0; i < argv.length; i++) {
+      if (argv[i] === '--stderr') {
+        lastStderrIndex = i;
+      }
+    }
+    if (lastStderrIndex !== -1 && argv[lastStderrIndex + 1] === '-') {
+      errorLogger.stream = process.stdout;
+    } else {
+      errorLogger.log(`--stderr must be a filename if argument is present`);
+      process.exitCode = 1;
+      return;
+    }
+  } else if (typeof stderrValue === 'string' && stderrValue.length > 0) {
+    errorLogger.stream = fs.createWriteStream(stderrValue);
+  } else {
+    errorLogger.log(`--stderr must be a filename if argument is present`);
+    process.exitCode = 1;
+    return;
+  }
 }
 
 if (args['h']) {
@@ -120,6 +148,35 @@ try {
   errorLogger.log(`-e --referer is not a valid URL`);
   process.exitCode = 1;
   return;
+}
+
+let viewport;
+if (args['viewport']) {
+  const viewportPattern = /^(\d+)x(\d+)$/;
+  const match = args['viewport'].match(viewportPattern);
+
+  if (match) {
+    const width = parseInt(match[1], 10);
+    const height = parseInt(match[2], 10);
+
+    // Validate reasonable viewport dimensions
+    if (width < 1 || height < 1 || width > 7680 || height > 4320) {
+      errorLogger.log(
+        `-V --viewport dimensions must be between 1-7680 (width) and 1-4320 (height)`
+      );
+      process.exitCode = 1;
+      return;
+    }
+
+    viewport = {
+      width,
+      height
+    };
+  } else {
+    errorLogger.log(`-V --viewport must be in format WIDTHxHEIGHT (e.g., 1920x1080)`);
+    process.exitCode = 1;
+    return;
+  }
 }
 
 const generateRequestHeaders = (headers) => {
@@ -217,7 +274,8 @@ const options = {
   cookies: cookies,
   trace: trace,
   method: args['X'] || args['request'],
-  data: args['d'] || args['data']
+  data: args['d'] || args['data'],
+  viewport: viewport
 };
 
 if (!!url == false) {

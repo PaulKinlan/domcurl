@@ -24,6 +24,10 @@ const domcurl = async (url, options) => {
     if (options.userAgent) {
       await page.setUserAgent(options.userAgent);
     }
+    
+    if (options.viewport) {
+      await page.setViewport(options.viewport);
+    }
 
     // Enable request interception if we need to change the method or add data
     if (options.method || options.data) {
@@ -107,7 +111,7 @@ const domcurl = async (url, options) => {
 
     process.exit(0);
   } catch (err) {
-    errorLogger.error(err);
+    errorLogger.log(err);
     process.exit(1);
   }
 };
