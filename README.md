@@ -195,6 +195,21 @@ Output a Chrome DevTools trace file (including screenshots.)
 
 `domcurl --url https://example.com --trace test.json`
 
+### Set viewport size
+
+Set the viewport size for the browser. This is useful for testing responsive designs and media queries.
+
+`domcurl --url https://example.com -V 1920x1080`
+
+or
+
+`domcurl --url https://example.com --viewport 375x667`
+
+The viewport format is `WIDTHxHEIGHT` in pixels. Common viewport sizes:
+- Desktop: `1920x1080`, `1366x768`, `1440x900`
+- Tablet: `768x1024`, `1024x768`
+- Mobile: `375x667`, `414x896`, `360x640`
+
 ## Using as a module
 
 `npm i domcurl`

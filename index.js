@@ -32,7 +32,8 @@ const args = minimist(process.argv.slice(2), {
     H: 'header',
     e: 'referer',
     b: 'cookie',
-    o: 'output'
+    o: 'output',
+    V: 'viewport'
   },
   default: {
     'waituntil': 'networkidle0',
@@ -147,6 +148,35 @@ try {
   return;
 }
 
+let viewport;
+if (args['viewport']) {
+  const viewportPattern = /^(\d+)x(\d+)$/;
+  const match = args['viewport'].match(viewportPattern);
+
+  if (match) {
+    const width = parseInt(match[1], 10);
+    const height = parseInt(match[2], 10);
+
+    // Validate reasonable viewport dimensions
+    if (width < 1 || height < 1 || width > 7680 || height > 4320) {
+      errorLogger.log(
+        `-V --viewport dimensions must be between 1-7680 (width) and 1-4320 (height)`
+      );
+      process.exitCode = 1;
+      return;
+    }
+
+    viewport = {
+      width,
+      height
+    };
+  } else {
+    errorLogger.log(`-V --viewport must be in format WIDTHxHEIGHT (e.g., 1920x1080)`);
+    process.exitCode = 1;
+    return;
+  }
+}
+
 const generateRequestHeaders = (headers) => {
   if (headers) {
     const requestDict = {};
@@ -240,7 +270,8 @@ const options = {
   referer: referer,
   headers: headers,
   cookies: cookies,
-  trace: trace
+  trace: trace,
+  viewport: viewport
 };
 
 if (!!url == false) {

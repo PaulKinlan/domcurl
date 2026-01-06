@@ -25,6 +25,10 @@ const domcurl = async (url, options) => {
       await page.setUserAgent(options.userAgent);
     }
 
+    if (options.viewport) {
+      await page.setViewport(options.viewport);
+    }
+
     page.on('request', request => {
       if (request.url() === url.href && options.requestHeader) {
         logger.log(`> ${request.method()} ${url.pathname} `);
@@ -67,7 +71,7 @@ const domcurl = async (url, options) => {
 
     process.exit(0);
   } catch (err) {
-    errorLogger.error(err);
+    errorLogger.log(err);
     process.exit(1);
   }
 };
