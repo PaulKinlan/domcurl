@@ -33,6 +33,8 @@ const args = minimist(process.argv.slice(2), {
     e: 'referer',
     b: 'cookie',
     o: 'output',
+    X: 'request',
+    d: 'data',
     V: 'viewport'
   },
   default: {
@@ -271,6 +273,8 @@ const options = {
   headers: headers,
   cookies: cookies,
   trace: trace,
+  method: args['X'] || args['request'],
+  data: args['d'] || args['data'],
   viewport: viewport
 };
 

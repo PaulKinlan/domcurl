@@ -168,6 +168,26 @@ If this option is used several times, the last one will be used.
 
 `domcurl --url https://example.com -H 'x-test:test1' -H  'x-test2:http://test.com'`
 
+### Specify HTTP method
+
+Use different HTTP methods like POST, PUT, DELETE, etc.
+
+`domcurl --url https://example.com -X POST`
+
+or
+
+`domcurl --url https://example.com --request PUT`
+
+### Send data with request
+
+Send data in the request body (useful for POST/PUT requests).
+
+`domcurl --url https://example.com -X POST -d "param1=value1&param2=value2"`
+
+or
+
+`domcurl --url https://example.com -X POST --data "param1=value1&param2=value2"`
+
 ### Set a cookie
 
 Sets a cookie on the request. It must be a valid Cookie string.

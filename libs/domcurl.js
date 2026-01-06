@@ -24,18 +24,50 @@ const domcurl = async (url, options) => {
     if (options.userAgent) {
       await page.setUserAgent(options.userAgent);
     }
-
+    
     if (options.viewport) {
       await page.setViewport(options.viewport);
     }
 
-    page.on('request', request => {
-      if (request.url() === url.href && options.requestHeader) {
-        logger.log(`> ${request.method()} ${url.pathname} `);
-        logger.log(`> Host: ${url.host}`);
-        printHeaders(request.headers(), '>', logger);
-      }
-    });
+    // Enable request interception if we need to change the method or add data
+    if (options.method || options.data) {
+      await page.setRequestInterception(true);
+
+      page.on('request', interceptedRequest => {
+        const requestUrl = interceptedRequest.url();
+        const overrides = {};
+
+        // Only modify the main request, not sub-resources
+        if (requestUrl === url.href) {
+          if (options.method) {
+            overrides.method = options.method.toUpperCase();
+          }
+
+          if (options.data) {
+            overrides.postData = options.data;
+          }
+
+          if (options.requestHeader) {
+            const method = overrides.method || interceptedRequest.method();
+            logger.log(`> ${method} ${url.pathname} `);
+            logger.log(`> Host: ${url.host}`);
+            printHeaders(interceptedRequest.headers(), '>', logger);
+          }
+
+          interceptedRequest.continue(overrides);
+        } else {
+          interceptedRequest.continue();
+        }
+      });
+    } else {
+      page.on('request', request => {
+        if (request.url() === url.href && options.requestHeader) {
+          logger.log(`> ${request.method()} ${url.pathname} `);
+          logger.log(`> Host: ${url.host}`);
+          printHeaders(request.headers(), '>', logger);
+        }
+      });
+    }
 
     if (options.cookies) {
       await page.setCookie(...options.cookies);
@@ -43,6 +75,14 @@ const domcurl = async (url, options) => {
 
     if (options.referer) {
       headers['referer'] = options.referer;
+    }
+
+    // Set content-type header if sending data and not already set
+    if (options.data) {
+      if (!options.headers || (!options.headers['content-type'] &&
+          !options.headers['Content-Type'])) {
+        headers['content-type'] = 'application/x-www-form-urlencoded';
+      }
     }
 
     Object.assign(headers, options.headers);
