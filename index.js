@@ -248,7 +248,7 @@ const generateCookiesHeaders = (cookieStrings, url) => {
   if (cookieStrings) {
     if (cookieStrings instanceof Array) {
       return cookieStrings.map(cookieString => {
-        parseCookieString(cookieString);
+        return parseCookieString(cookieString);
       });
     } else {
       return [parseCookieString(cookieStrings)];
