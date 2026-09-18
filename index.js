@@ -35,7 +35,8 @@ const args = minimist(process.argv.slice(2), {
     o: 'output',
     X: 'request',
     d: 'data',
-    V: 'viewport'
+    V: 'viewport',
+    w: 'wait-selector'
   },
   default: {
     'waituntil': 'networkidle0',
@@ -275,7 +276,8 @@ const options = {
   trace: trace,
   method: args['X'] || args['request'],
   data: args['d'] || args['data'],
-  viewport: viewport
+  viewport: viewport,
+  waitSelector: args['wait-selector'] || args['w']
 };
 
 if (!!url == false) {
