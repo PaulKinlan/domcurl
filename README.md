@@ -234,8 +234,17 @@ The viewport format is `WIDTHxHEIGHT` in pixels. Common viewport sizes:
 
 `npm i domcurl`
 
-`
+```javascript
+const domcurl = require('domcurl');
+
+const html = await domcurl('https://paul.kinlan.me/', {});
+console.log(html);
+```
+
+Or using destructuring:
+
+```javascript
 const {domcurl} = require('domcurl');
 
-domcurl(`https://paul.kinlan.me/`, {});
-`
+const html = await domcurl('https://paul.kinlan.me/', {});
+```

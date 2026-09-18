@@ -1,3 +1,4 @@
+const {URL} = require('url');
 const {Logger, ErrorLogger} = require('./output.js');
 const puppeteer = require('puppeteer');
 
@@ -8,12 +9,17 @@ const printHeaders = (headers, preamble, logger) => {
   }
 };
 
-const domcurl = async (url, options) => {
+const domcurl = async (url, options = {}) => {
+  if (typeof url === 'string') {
+    url = new URL(url);
+  }
+
   const logger = options.logger || new Logger();
   const errorLogger = options.errorLogger || new ErrorLogger();
+  let browser;
 
   try {
-    const browser = await puppeteer.launch({
+    browser = await puppeteer.launch({
       // dumpio: true,
       // headless: false,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
@@ -103,19 +109,26 @@ const domcurl = async (url, options) => {
     }
 
     if (options.responseHeader) {
-      printHeaders(response.headers(), '<');
+      printHeaders(response.headers(), '<', logger);
     }
 
     const html = await page.content();
-    logger.log(html);
+    if (options.logger) {
+      logger.log(html);
+    }
 
-    process.exit(0);
+    return html;
   } catch (err) {
-    errorLogger.log(err);
-    process.exit(1);
+    if (options.errorLogger) {
+      errorLogger.log(err);
+    }
+    throw err;
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
 };
 
-module.exports = {
-  domcurl: domcurl
-};
+module.exports = domcurl;
+module.exports.domcurl = domcurl;

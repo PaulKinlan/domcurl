@@ -284,4 +284,11 @@ if (!!url == false) {
   return;
 }
 
-domcurl(url, options);
+domcurl(url, options)
+    .then(() => {
+      process.exit(0);
+    })
+    .catch((err) => {
+      errorLogger.log(err);
+      process.exit(1);
+    });
