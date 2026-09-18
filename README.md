@@ -209,6 +209,16 @@ or
 
 `domcurl --url https://example.com --max-time 60`
 
+### Wait for a DOM selector
+
+Wait for a specific element matching a CSS selector to appear in the DOM before capturing output.
+
+`domcurl --url https://example.com -w "#content"`
+
+or
+
+`domcurl --url https://example.com --wait-selector ".loaded-item"`
+
 ### Specify a trace file
 
 Output a Chrome DevTools trace file (including screenshots.)

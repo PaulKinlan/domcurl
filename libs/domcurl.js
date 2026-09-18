@@ -98,6 +98,12 @@ const domcurl = async (url, options) => {
       waitUntil: options.waitUntil
     });
 
+    if (options.waitSelector) {
+      await page.waitForSelector(options.waitSelector, {
+        timeout: options.maxTime
+      });
+    }
+
     if (options.trace) {
       await page.tracing.stop();
     }
